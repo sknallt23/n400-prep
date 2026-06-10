@@ -109,6 +109,35 @@
     .rev-q{font-weight:700;margin-bottom:3px}
     .rev-a{color:#555;font-size:.82rem}
     .section-hdr{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin:18px 0 8px}
+
+    /* ── WRITTEN TEST ── */
+    .mode-card.teal{border-left-color:#0d9488}.mode-card.teal h2{color:#0d9488}
+    .wt-card{background:var(--card);border-radius:16px;padding:24px 20px;box-shadow:0 3px 14px rgba(0,0,0,.1);margin-bottom:14px;text-align:center;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+    .wt-sentence{font-size:1.1rem;font-weight:600;color:#111;line-height:1.6;display:none}
+    .wt-sentence.visible{display:block}
+    .wt-hint{color:var(--gray);font-size:.82rem}
+    .wt-btn-row{display:flex;gap:8px;margin-bottom:12px}
+    .wt-btn{flex:1;padding:11px 6px;border-radius:12px;border:2px solid;font-size:.83rem;font-weight:700;cursor:pointer;transition:all .18s}
+    .wt-btn.speak{border-color:#2563eb;color:#2563eb;background:#eff6ff}
+    .wt-btn.show-btn{border-color:var(--border);color:var(--gray);background:#fff}
+    .wt-btn.show-btn.on{border-color:var(--navy);color:var(--navy);background:#f0f4ff}
+    .wt-input{width:100%;padding:13px;border:2px solid var(--border);border-radius:12px;font-size:1rem;font-family:inherit;outline:none;margin-bottom:10px;resize:vertical;min-height:70px;line-height:1.5}
+    .wt-input:focus{border-color:var(--navy)}
+    .wt-input:disabled{background:#f9fafb;color:#555}
+    .wt-feedback{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px;display:none}
+    .wt-feedback.show{display:block}
+    .wt-verdict{font-size:1rem;font-weight:800;padding:10px 14px;border-radius:10px;text-align:center;margin-bottom:10px}
+    .wt-verdict.pass{background:var(--green-bg);color:var(--green)}
+    .wt-verdict.borderline{background:#fef3c7;color:#92400e}
+    .wt-verdict.fail{background:var(--fail-bg);color:var(--fail)}
+    .wt-word-row{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+    .wt-word{padding:4px 10px;border-radius:16px;font-size:.88rem;font-weight:600}
+    .wt-word.ok{background:var(--green-bg);color:var(--green)}
+    .wt-word.typo{background:#fef3c7;color:#92400e}
+    .wt-word.wrong{background:var(--fail-bg);color:var(--fail);text-decoration:line-through}
+    .wt-missing{background:var(--fail-bg);color:var(--fail);border:2px dashed var(--fail)}
+    .wt-rule{font-size:.77rem;color:var(--gray);margin-top:8px;line-height:1.55}
+    .wt-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:4px}
   </style>
 </head>
 <body>
@@ -135,6 +164,11 @@
       <div class="icon">📝</div>
       <h2>Simulate Test</h2>
       <p>10 random questions, multiple-choice. Score 6 or more to <strong>PASS</strong> — exactly like your real interview.</p>
+    </div>
+    <div class="mode-card teal" onclick="startWritten()">
+      <div class="icon">✍️</div>
+      <h2>Written Test</h2>
+      <p>Hear a sentence read aloud, then type it exactly. Practice the English writing portion of your naturalization interview.</p>
     </div>
     <div class="ca-banner">📍 <strong>California answers pre-filled:</strong> Governor Gavin Newsom · Senators Alex Padilla &amp; Adam Schiff · Capital Sacramento</div>
   </div>
@@ -194,6 +228,40 @@
     <div class="nav-row" style="margin-top:16px">
       <button class="btn btn-ghost" onclick="goHome()">🏠 Home</button>
       <button class="btn btn-red" onclick="startTest()">Try Again →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════ WRITTEN TEST ════════════════════ -->
+  <div id="screen-written" class="screen">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <div class="prog-row">
+      <span id="wt-counter">Sentence 1 of 48</span>
+      <span id="wt-cat" style="color:var(--gray);font-size:.8rem"></span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="wt-bar" style="background:#0d9488;width:2%"></div></div>
+
+    <div class="wt-card">
+      <div class="wt-hint" id="wt-hint">🔊 Tap <strong>Hear Sentence</strong> to listen, then type what you heard below</div>
+      <div class="wt-sentence" id="wt-sentence"></div>
+    </div>
+
+    <div class="wt-btn-row">
+      <button class="wt-btn speak" onclick="speakSentence()">🔊 Hear Sentence</button>
+      <button class="wt-btn show-btn" id="wt-show-btn" onclick="toggleShowSentence()">👁 Show Text</button>
+    </div>
+
+    <textarea class="wt-input" id="wt-input" rows="3" placeholder="Type what you hear here…"></textarea>
+    <button class="btn btn-navy" style="width:100%;margin-bottom:12px" onclick="checkWritten()">✔ Check Answer</button>
+
+    <div class="wt-feedback" id="wt-feedback">
+      <div class="wt-verdict" id="wt-verdict"></div>
+      <div class="wt-lbl" style="margin-top:10px">Word-by-word check</div>
+      <div class="wt-word-row" id="wt-words"></div>
+      <div class="wt-rule" id="wt-rule"></div>
+    </div>
+
+    <div class="next-area" id="wt-next">
+      <button class="btn btn-navy" onclick="nextWritten()">Next Sentence →</button>
     </div>
   </div>
 
@@ -810,6 +878,231 @@ function shuffle(arr){
     [a[i],a[j]]=[a[j],a[i]];
   }
   return a;
+}
+
+// ══════════════════════════════════════════════════
+// WRITING TEST — sentences compiled from:
+// USCIS passportquiz.com 46 official sentences +
+// additional sentences reported from real interviews
+// ══════════════════════════════════════════════════
+const WRITING = [
+  // Government & Democracy
+  {s:"Washington was the first President.",          cat:"Government"},
+  {s:"Lincoln was President.",                       cat:"Government"},
+  {s:"The President lives in the White House.",      cat:"Government"},
+  {s:"The White House is in Washington, D.C.",       cat:"Government"},
+  {s:"Congress meets in Washington, D.C.",           cat:"Government"},
+  {s:"The people elect Congress.",                   cat:"Government"},
+  {s:"The people elect the President in November.",  cat:"Government"},
+  {s:"Citizens can vote.",                           cat:"Government"},
+  {s:"Citizens have the right to vote.",             cat:"Government"},
+  {s:"We pay taxes.",                                cat:"Government"},
+  {s:"People want to be free.",                      cat:"Government"},
+  {s:"Freedom of speech is a right.",                cat:"Government"},
+  {s:"Freedom of speech is one right.",              cat:"Government"},
+  {s:"The President works in the White House.",      cat:"Government"},
+  {s:"The President is in charge of the executive branch.", cat:"Government"},
+  {s:"Each state has two Senators.",                 cat:"Government"},
+  {s:"Congress has one hundred Senators.",           cat:"Government"},
+  {s:"Citizens have to pay federal taxes.",          cat:"Government"},
+  {s:"Citizens eighteen and older can vote.",        cat:"Government"},
+  {s:"The people elect the President.",              cat:"Government"},
+  // Geography
+  {s:"The United States has fifty states.",          cat:"Geography"},
+  {s:"The United States is one country.",            cat:"Geography"},
+  {s:"California is a state.",                       cat:"Geography"},
+  {s:"Alaska is the largest state.",                 cat:"Geography"},
+  {s:"Delaware was the first state.",                cat:"Geography"},
+  {s:"New York City is in New York.",                cat:"Geography"},
+  {s:"Mexico is south of the United States.",        cat:"Geography"},
+  {s:"Canada is north of the United States.",        cat:"Geography"},
+  {s:"Alaska is north of Canada.",                   cat:"Geography"},
+  {s:"Washington, D.C. is the capital.",             cat:"Geography"},
+  {s:"The capital is Washington, D.C.",              cat:"Geography"},
+  {s:"The capital of the United States is Washington, D.C.", cat:"Geography"},
+  // Flag & Symbols
+  {s:"The flag is red, white, and blue.",            cat:"Symbols"},
+  {s:"The American flag is red, white, and blue.",   cat:"Symbols"},
+  {s:"The American flag has stars and stripes.",     cat:"Symbols"},
+  // Holidays
+  {s:"Martin Luther King, Jr. Day is in January.",  cat:"Holidays"},
+  {s:"Presidents' Day is in February.",              cat:"Holidays"},
+  {s:"Memorial Day is in May.",                      cat:"Holidays"},
+  {s:"Flag Day is in June.",                         cat:"Holidays"},
+  {s:"Independence Day is in July.",                 cat:"Holidays"},
+  {s:"Labor Day is in September.",                   cat:"Holidays"},
+  {s:"Columbus Day is in October.",                  cat:"Holidays"},
+  {s:"Thanksgiving is in November.",                 cat:"Holidays"},
+  // History
+  {s:"American Indians lived here first.",           cat:"History"},
+  {s:"The Civil War was in the United States.",      cat:"History"},
+  {s:"Lincoln was the President during the Civil War.", cat:"History"},
+  {s:"George Washington was the first President.",   cat:"History"},
+  {s:"Washington is the Father of Our Country.",     cat:"History"},
+  {s:"Abraham Lincoln freed the slaves.",            cat:"History"},
+  {s:"New York City was the first capital of the United States.", cat:"History"},
+];
+
+// ══════════════════════════════════════════════════
+// WRITING TEST STATE & LOGIC
+// ══════════════════════════════════════════════════
+let wtList  = [];
+let wtIdx   = 0;
+let wtShown = false;
+
+function startWritten(){
+  wtList  = shuffle([...WRITING]);
+  wtIdx   = 0;
+  wtShown = false;
+  show('written');
+  renderWritten();
+}
+
+function renderWritten(){
+  const item = wtList[wtIdx];
+  wtShown    = false;
+  const pct  = Math.round((wtIdx+1)/wtList.length*100);
+  document.getElementById('wt-counter').textContent = `Sentence ${wtIdx+1} of ${wtList.length}`;
+  document.getElementById('wt-cat').textContent     = item.cat;
+  document.getElementById('wt-bar').style.width     = pct+'%';
+  const sentEl = document.getElementById('wt-sentence');
+  sentEl.textContent = item.s;
+  sentEl.classList.remove('visible');
+  document.getElementById('wt-hint').style.display = '';
+  const showBtn = document.getElementById('wt-show-btn');
+  showBtn.classList.remove('on'); showBtn.textContent = '👁 Show Text';
+  const inp = document.getElementById('wt-input');
+  inp.value = ''; inp.disabled = false;
+  document.getElementById('wt-feedback').classList.remove('show');
+  document.getElementById('wt-next').classList.remove('show');
+}
+
+function speakSentence(){
+  if(!('speechSynthesis' in window)){
+    alert('Speech not supported — tap "Show Text" to read the sentence.');
+    return;
+  }
+  const item = wtList[wtIdx];
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(item.s);
+  u.lang  = 'en-US'; u.rate = 0.82; u.pitch = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const v = voices.find(v=>v.lang==='en-US') || voices.find(v=>v.lang.startsWith('en'));
+  if(v) u.voice = v;
+  window.speechSynthesis.speak(u);
+}
+
+// iOS loads voices asynchronously — trigger on first interaction
+if('speechSynthesis' in window){
+  window.speechSynthesis.onvoiceschanged = ()=>{ window.speechSynthesis.getVoices(); };
+}
+
+function toggleShowSentence(){
+  wtShown = !wtShown;
+  document.getElementById('wt-sentence').classList.toggle('visible', wtShown);
+  document.getElementById('wt-hint').style.display = wtShown ? 'none' : '';
+  const btn = document.getElementById('wt-show-btn');
+  btn.classList.toggle('on', wtShown);
+  btn.textContent = wtShown ? '🙈 Hide Text' : '👁 Show Text';
+}
+
+// ── Answer checking ──
+const MINOR = new Set(['the','a','an','in','is','was','are','of','to','and','be','for','on','at','by','or']);
+const NUMMAP = {'1':'one','2':'two','3':'three','4':'four','5':'five','6':'six','7':'seven',
+                '8':'eight','9':'nine','10':'ten','13':'thirteen','18':'eighteen',
+                '50':'fifty','100':'one','onehundred':'onehundred'};
+
+function norm(w){ return w.toLowerCase().replace(/[^a-z0-9]/g,''); }
+
+function lev(a,b){
+  if(a===b) return 0;
+  const m=a.length,n=b.length;
+  const d=[];
+  for(let i=0;i<=m;i++) d[i]=[i];
+  for(let j=0;j<=n;j++) d[0][j]=j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    d[i][j]=a[i-1]===b[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j],d[i][j-1],d[i-1][j-1]);
+  return d[m][n];
+}
+
+function wordMatch(exp, typed){
+  const e=norm(exp), t=norm(typed);
+  if(!e||!t) return null;
+  if(e===t) return 'ok';
+  // Number equivalents
+  const en=NUMMAP[e]||e, tn=NUMMAP[t]||t;
+  if(en===tn) return 'ok';
+  // Fuzzy: 1 char error for words ≥4 letters, 2 errors for words ≥7
+  const dist=lev(e,t);
+  if(e.length>=7 && dist<=2) return 'typo';
+  if(e.length>=4 && dist<=1) return 'typo';
+  return null;
+}
+
+function checkWritten(){
+  const item   = wtList[wtIdx];
+  const typed  = document.getElementById('wt-input').value.trim();
+  if(!typed){ document.getElementById('wt-input').focus(); return; }
+
+  // Tokenise
+  const expTokens   = item.s.match(/[\w''.-]+/g) || [];
+  const typedTokens = (typed.match(/[\w''.-]+/g) || []).slice();
+
+  // Greedy alignment: consume typed tokens as we walk expected
+  const results = expTokens.map(expW => {
+    let best=null, bestScore=null, bestIdx=-1;
+    for(let i=0;i<typedTokens.length;i++){
+      const sc = wordMatch(expW, typedTokens[i]);
+      if(sc==='ok')  { best=typedTokens[i]; bestScore='ok';   bestIdx=i; break; }
+      if(sc==='typo' && bestScore!=='ok'){ best=typedTokens[i]; bestScore='typo'; bestIdx=i; }
+    }
+    if(bestIdx>=0) typedTokens.splice(bestIdx,1);
+    return { exp:expW, got:best, status:bestScore||'wrong', minor:MINOR.has(norm(expW)) };
+  });
+
+  // Score
+  const keyWrong   = results.filter(r=>r.status==='wrong'&&!r.minor).length;
+  const minorWrong = results.filter(r=>r.status==='wrong'&&r.minor).length;
+  const typos      = results.filter(r=>r.status==='typo').length;
+  const score      = keyWrong + Math.floor(minorWrong/2);
+
+  let verdict, cls, rule;
+  if(score===0 && typos===0){
+    verdict='✓ PASS — Perfect!'; cls='pass';
+    rule='Every word matches exactly.';
+  } else if(score===0){
+    verdict='✓ PASS — Minor spelling, acceptable'; cls='pass';
+    rule='USCIS allows minor spelling errors as long as the sentence is still understandable.';
+  } else if(score===1){
+    verdict='⚠ BORDERLINE — May pass in real test'; cls='borderline';
+    rule='One error may be forgiven if the officer can still understand your sentence. Practice until you get it perfect.';
+  } else {
+    verdict='✗ NEEDS WORK — Too many errors'; cls='fail';
+    rule=`${keyWrong} key word(s) are missing or wrong. The officer may not understand your sentence.`;
+  }
+
+  // Word chips
+  const chips = results.map(r=>{
+    if(r.status==='ok')    return `<span class="wt-word ok">${r.exp}</span>`;
+    if(r.status==='typo')  return `<span class="wt-word typo" title='you wrote: ${r.got}'>${r.exp} <small>≈</small></span>`;
+    return `<span class="wt-word wrong ${r.minor?'':'wt-missing'}">${r.exp}</span>`;
+  }).join('');
+
+  document.getElementById('wt-verdict').textContent = verdict;
+  document.getElementById('wt-verdict').className   = `wt-verdict ${cls}`;
+  document.getElementById('wt-words').innerHTML     = chips;
+  document.getElementById('wt-rule').textContent    = rule;
+  document.getElementById('wt-feedback').classList.add('show');
+  document.getElementById('wt-next').classList.add('show');
+  document.getElementById('wt-input').disabled = true;
+  if(!wtShown) toggleShowSentence();
+  document.getElementById('wt-feedback').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function nextWritten(){
+  wtIdx=(wtIdx+1)%wtList.length;
+  renderWritten();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // Init
