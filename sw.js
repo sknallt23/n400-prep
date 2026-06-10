@@ -1,5 +1,11 @@
-const CACHE = 'n400-v1';
-const ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+const CACHE = 'n400-v2';
+const ASSETS = [
+  '/n400-prep/',
+  '/n400-prep/index.html',
+  '/n400-prep/manifest.json',
+  '/n400-prep/icon-192.png',
+  '/n400-prep/icon-512.png'
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
