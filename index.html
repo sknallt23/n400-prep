@@ -145,6 +145,7 @@
       <div class="chip" data-cat="American Government" onclick="setFilter(this)">Government (57)</div>
       <div class="chip" data-cat="American History" onclick="setFilter(this)">History (30)</div>
       <div class="chip" data-cat="Integrated Civics" onclick="setFilter(this)">Civics (13)</div>
+      <div class="chip shuffle-chip" id="shuffle-chip" onclick="toggleShuffle()">🔀 Shuffle</div>
     </div>
     <div class="prog-row">
       <span id="t-counter">1 of 100</span><span id="t-pct">1%</span>
@@ -610,9 +611,10 @@ function getDistractors(q, count) {
 // ══════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════
-let trainList = [...Q];
-let trainIdx  = 0;
-let revealed  = false;
+let trainList     = [...Q];
+let trainIdx      = 0;
+let revealed      = false;
+let trainShuffled = false;
 let testList  = [];
 let testIdx   = 0;
 let testLog   = [];   // {q, correct, chosen, ok}
@@ -636,20 +638,34 @@ function saveStats(){ localStorage.setItem('n400_stats', JSON.stringify(stats));
 // TRAIN
 // ══════════════════════════════════════════════════
 function startTrain(){
-  trainList = [...Q];
-  trainIdx  = 0;
-  revealed  = false;
+  trainShuffled = false;
+  trainIdx      = 0;
+  revealed      = false;
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   document.querySelector('[data-cat="all"]').classList.add('active');
+  document.getElementById('shuffle-chip').classList.remove('active');
+  trainList = [...Q];
   show('train');
   renderCard();
 }
 
 function setFilter(el){
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.chip:not(.shuffle-chip)').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   const cat = el.dataset.cat;
-  trainList = cat==='all' ? [...Q] : Q.filter(x=>x.cat===cat);
+  const base = cat==='all' ? [...Q] : Q.filter(x=>x.cat===cat);
+  trainList = trainShuffled ? shuffle(base) : base;
+  trainIdx  = 0;
+  revealed  = false;
+  renderCard();
+}
+
+function toggleShuffle(){
+  trainShuffled = !trainShuffled;
+  const chip = document.getElementById('shuffle-chip');
+  chip.classList.toggle('active', trainShuffled);
+  // Re-order current list; keep position at question 0
+  trainList = trainShuffled ? shuffle([...trainList]) : [...trainList].sort((a,b)=>a.id-b.id);
   trainIdx  = 0;
   revealed  = false;
   renderCard();
