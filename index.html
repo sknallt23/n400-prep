@@ -57,6 +57,8 @@
     .filter-bar::-webkit-scrollbar{display:none}
     .chip{padding:6px 14px;border-radius:20px;border:2px solid var(--navy);background:#fff;color:var(--navy);font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .18s}
     .chip.active{background:var(--navy);color:#fff}
+    .shuffle-btn{width:100%;padding:9px;border-radius:10px;border:2px solid var(--border);background:#fff;color:var(--gray);font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:12px;transition:all .18s}
+    .shuffle-btn.active{border-color:var(--red);background:#fff0f0;color:var(--red)}
     .flashcard{background:var(--card);border-radius:18px;padding:28px 22px;min-height:220px;box-shadow:0 3px 14px rgba(0,0,0,.1);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:transform .12s;user-select:none}
     .flashcard:active{transform:scale(.98)}
     .fc-question{font-size:1.1rem;font-weight:600;line-height:1.55;color:#111}
@@ -145,8 +147,8 @@
       <div class="chip" data-cat="American Government" onclick="setFilter(this)">Government (57)</div>
       <div class="chip" data-cat="American History" onclick="setFilter(this)">History (30)</div>
       <div class="chip" data-cat="Integrated Civics" onclick="setFilter(this)">Civics (13)</div>
-      <div class="chip shuffle-chip" id="shuffle-chip" onclick="toggleShuffle()">🔀 Shuffle</div>
     </div>
+    <button id="shuffle-chip" class="shuffle-btn" onclick="toggleShuffle()">🔀 Shuffle: Off</button>
     <div class="prog-row">
       <span id="t-counter">1 of 100</span><span id="t-pct">1%</span>
     </div>
@@ -643,7 +645,9 @@ function startTrain(){
   revealed      = false;
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   document.querySelector('[data-cat="all"]').classList.add('active');
-  document.getElementById('shuffle-chip').classList.remove('active');
+  const sc = document.getElementById('shuffle-chip');
+  sc.classList.remove('active');
+  sc.textContent = '🔀 Shuffle: Off';
   trainList = [...Q];
   show('train');
   renderCard();
@@ -664,7 +668,7 @@ function toggleShuffle(){
   trainShuffled = !trainShuffled;
   const chip = document.getElementById('shuffle-chip');
   chip.classList.toggle('active', trainShuffled);
-  // Re-order current list; keep position at question 0
+  chip.textContent = trainShuffled ? '🔀 Shuffle: On' : '🔀 Shuffle: Off';
   trainList = trainShuffled ? shuffle([...trainList]) : [...trainList].sort((a,b)=>a.id-b.id);
   trainIdx  = 0;
   revealed  = false;
