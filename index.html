@@ -979,22 +979,19 @@ function renderWritten(){
 
 function speakSentence(){
   if(!('speechSynthesis' in window)){
-    alert('Speech not supported — tap "Show Text" to read the sentence.');
+    alert('Speech not available — tap "Show Text" to read the sentence.');
     return;
   }
-  const item = wtList[wtIdx];
+  const text = wtList[wtIdx].s;
+  // iOS PWA requires cancel() + a small delay before speak() to avoid silence bug
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(item.s);
-  u.lang  = 'en-US'; u.rate = 0.82; u.pitch = 1;
-  const voices = window.speechSynthesis.getVoices();
-  const v = voices.find(v=>v.lang==='en-US') || voices.find(v=>v.lang.startsWith('en'));
-  if(v) u.voice = v;
-  window.speechSynthesis.speak(u);
-}
-
-// iOS loads voices asynchronously — trigger on first interaction
-if('speechSynthesis' in window){
-  window.speechSynthesis.onvoiceschanged = ()=>{ window.speechSynthesis.getVoices(); };
+  setTimeout(() => {
+    const u  = new SpeechSynthesisUtterance(text);
+    u.lang   = 'en-US';  // iOS selects voice automatically from lang — don't force a voice object
+    u.rate   = 0.82;
+    u.pitch  = 1;
+    window.speechSynthesis.speak(u);
+  }, 50);
 }
 
 function toggleShowSentence(){
