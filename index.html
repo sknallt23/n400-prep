@@ -59,8 +59,10 @@
     .chip.active{background:var(--navy);color:#fff}
     .shuffle-btn{width:100%;padding:9px;border-radius:10px;border:2px solid var(--border);background:#fff;color:var(--gray);font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:12px;transition:all .18s}
     .shuffle-btn.active{border-color:var(--red);background:#fff0f0;color:var(--red)}
-    .flashcard{background:var(--card);border-radius:18px;padding:28px 22px;min-height:220px;box-shadow:0 3px 14px rgba(0,0,0,.1);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:transform .12s;user-select:none}
+    .flashcard{position:relative;background:var(--card);border-radius:18px;padding:28px 22px;min-height:220px;box-shadow:0 3px 14px rgba(0,0,0,.1);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:transform .12s;user-select:none}
     .flashcard:active{transform:scale(.98)}
+    .star-btn{position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.7rem;line-height:1;cursor:pointer;color:#d1d5db;padding:4px;z-index:2}
+    .star-btn.active{color:#f59e0b}
     .fc-question{font-size:1.1rem;font-weight:600;line-height:1.55;color:#111}
     .tap-hint{color:var(--gray);font-size:.78rem;margin-top:18px}
     .fc-answer{display:none;margin-top:18px;padding-top:16px;border-top:2px solid var(--bg);width:100%}
@@ -181,6 +183,7 @@
       <div class="chip" data-cat="American Government" onclick="setFilter(this)">Government (57)</div>
       <div class="chip" data-cat="American History" onclick="setFilter(this)">History (30)</div>
       <div class="chip" data-cat="Integrated Civics" onclick="setFilter(this)">Civics (13)</div>
+      <div class="chip" id="chip-starred" data-cat="starred" onclick="setFilter(this)">⭐ Starred (0)</div>
     </div>
     <button id="shuffle-chip" class="shuffle-btn" onclick="toggleShuffle()">🔀 Shuffle: Off</button>
     <div class="prog-row">
@@ -188,6 +191,7 @@
     </div>
     <div class="prog-bar"><div class="prog-fill" id="t-bar" style="width:1%"></div></div>
     <div class="flashcard" id="flashcard" onclick="revealCard()">
+      <button class="star-btn" id="star-btn" onclick="toggleStar(event)">☆</button>
       <div class="badge" id="fc-sub">—</div>
       <div class="fc-question" id="fc-q">Loading…</div>
       <p class="tap-hint">Tap to reveal answer</p>
@@ -768,6 +772,7 @@ let trainList     = [...Q];
 let trainIdx      = 0;
 let revealed      = false;
 let trainShuffled = false;
+let starred       = new Set(JSON.parse(localStorage.getItem('n400_starred')||'[]'));
 let testList  = [];
 let testIdx   = 0;
 let testLog   = [];   // {q, correct, chosen, ok}
@@ -800,6 +805,7 @@ function startTrain(){
   sc.classList.remove('active');
   sc.textContent = '🔀 Shuffle: Off';
   trainList = [...Q];
+  updateStarredChipLabel();
   show('train');
   renderCard();
 }
@@ -808,11 +814,27 @@ function setFilter(el){
   document.querySelectorAll('.chip:not(.shuffle-chip)').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   const cat = el.dataset.cat;
-  const base = cat==='all' ? [...Q] : Q.filter(x=>x.cat===cat);
+  const base = cat==='all' ? [...Q] : cat==='starred' ? Q.filter(x=>starred.has(x.id)) : Q.filter(x=>x.cat===cat);
   trainList = trainShuffled ? shuffle(base) : base;
   trainIdx  = 0;
   revealed  = false;
   renderCard();
+}
+
+function updateStarredChipLabel(){
+  document.getElementById('chip-starred').textContent = `⭐ Starred (${starred.size})`;
+}
+
+function toggleStar(e){
+  e.stopPropagation();
+  const item = trainList[trainIdx];
+  if(!item) return;
+  if(starred.has(item.id)) starred.delete(item.id);
+  else starred.add(item.id);
+  localStorage.setItem('n400_starred', JSON.stringify([...starred]));
+  updateStarredChipLabel();
+  document.getElementById('star-btn').classList.toggle('active', starred.has(item.id));
+  document.getElementById('star-btn').textContent = starred.has(item.id) ? '★' : '☆';
 }
 
 function toggleShuffle(){
@@ -827,6 +849,19 @@ function toggleShuffle(){
 }
 
 function renderCard(){
+  const starBtn = document.getElementById('star-btn');
+  if(trainList.length===0){
+    document.getElementById('t-counter').textContent = '0 of 0';
+    document.getElementById('t-pct').textContent     = '0%';
+    document.getElementById('t-bar').style.width     = '0%';
+    document.getElementById('fc-sub').textContent    = '—';
+    document.getElementById('fc-q').textContent      = 'No starred questions yet. Tap ☆ on any card to save it here.';
+    document.getElementById('fc-ans').innerHTML      = '';
+    document.getElementById('flashcard').classList.remove('revealed');
+    starBtn.style.display = 'none';
+    return;
+  }
+  starBtn.style.display = '';
   const item = trainList[trainIdx];
   const tot  = trainList.length;
   const pct  = Math.round((trainIdx+1)/tot*100);
@@ -835,6 +870,8 @@ function renderCard(){
   document.getElementById('t-bar').style.width     = pct+'%';
   document.getElementById('fc-sub').textContent    = item.sub;
   document.getElementById('fc-q').textContent      = item.q;
+  starBtn.classList.toggle('active', starred.has(item.id));
+  starBtn.textContent = starred.has(item.id) ? '★' : '☆';
   const card = document.getElementById('flashcard');
   card.classList.remove('revealed');
   revealed = false;
